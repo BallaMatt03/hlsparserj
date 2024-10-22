@@ -15,6 +15,8 @@
  */
 package com.comcast.viper.hlsparserj;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +27,7 @@ import com.comcast.viper.hlsparserj.tags.UnparsedTag;
 import com.comcast.viper.hlsparserj.tags.media.AllowCache;
 import com.comcast.viper.hlsparserj.tags.media.ByteRange;
 import com.comcast.viper.hlsparserj.tags.media.ExtInf;
+import com.comcast.viper.hlsparserj.tags.media.ExtMap;
 import com.comcast.viper.hlsparserj.tags.media.Key;
 import com.comcast.viper.hlsparserj.tags.media.MediaSequence;
 import com.comcast.viper.hlsparserj.tags.media.PlaylistType;
@@ -176,5 +179,34 @@ public abstract class MediaPlaylist extends AbstractPlaylist {
             return false;
         }
         return true;
+    }
+
+    // Define a method to get the initialization segment
+    public ExtMap getInitializationSegment() {
+        // Iterate through the tags to find the initialization segment tag
+        for (UnparsedTag unparsedTag : tags) {
+            if (unparsedTag.getTagName().equals(TagNames.EXTXMAP)) {
+                // Assuming EXT-X-MAP contains URI, BYTERANGE attributes
+                String uri = unparsedTag.getAttributes().get("URI");
+                String byteRange = unparsedTag.getAttributes().get("BYTERANGE");
+
+                int length = 0;
+                int offset = 0;
+                if (byteRange != null) {
+                    String[] parts = byteRange.split("@");
+                    length = Integer.parseInt(parts[0]);
+                    if (parts.length > 1) {
+                        offset = Integer.parseInt(parts[1]);
+                    }
+                }
+
+                try {
+                    return new ExtMap(new URI(uri), length, offset);
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null; // Return null if no initialization segment is found
     }
 }

@@ -243,4 +243,6 @@ public class TagNames {
     static {
         TagFactory.registerTag(EXTXIFRAMESSTREAMINF, IFrameStreamInf.class);
     }
+
+    public static final String EXTXMAP = "EXT-X-MAP";
 }
